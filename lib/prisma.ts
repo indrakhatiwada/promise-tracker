@@ -1,9 +1,3 @@
-import { PrismaClient } from '@prisma/client'
-
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
-}
-
-export const prisma = globalForPrisma.prisma ?? new PrismaClient()
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+// This file is deprecated. Please use prisma-client.ts instead.
+// Keeping this file temporarily to avoid breaking imports while migration is in progress.
+export { prisma } from './prisma-client';

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { Nav } from "@/components/nav";
+import { MainNav } from "@/components/main-nav";
 import { Providers } from "@/components/providers";
+import { getCurrentUser } from "@/lib/auth";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -17,7 +18,7 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "Promise Tracker",
-  description: "Track and verify political promises",
+  description: "Track and verify political promises in Nepal",
   openGraph: {
     title: "Promise Tracker",
     description: "Track and verify political promises",
@@ -25,11 +26,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await getCurrentUser();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -37,7 +40,7 @@ export default function RootLayout({
       >
         <Providers>
           <div className="relative flex min-h-screen flex-col">
-            <Nav />
+            <MainNav user={user} />
             <div className="flex-1">{children}</div>
           </div>
         </Providers>

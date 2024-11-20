@@ -3,11 +3,13 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Account {
@@ -58,18 +60,21 @@ model VerificationToken {
 }
 
 model Promise {
-  id           String         @id @default(cuid())
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   promiserName String
   description  String
-  party        PoliticalParty
+  party        String
   articleLink  String
+  screenshot   String?
   promisedDate DateTime
   imageUrl     String?
-  status       Status         @default(PENDING)
+  status       Status   @default(PENDING)
   userId       String
-  user         User          @relation(fields: [userId], references: [id])
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 enum Role {
@@ -81,13 +86,7 @@ enum Status {
   PENDING
   APPROVED
   REJECTED
+  IN_PROGRESS
   FULFILLED
   BROKEN
-}
-
-enum PoliticalParty {
-  DEMOCRATIC
-  REPUBLICAN
-  INDEPENDENT
-  OTHER
 }

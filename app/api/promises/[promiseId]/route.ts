@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/db';
 import { z } from 'zod';
+import { Status } from '@prisma/client';
 
 const updateSchema = z.object({
-  status: z.enum(['APPROVED', 'REJECTED', 'FULFILLED', 'BROKEN']),
+  status: z.enum(['PENDING', 'APPROVED', 'REJECTED', 'IN_PROGRESS', 'FULFILLED', 'BROKEN']),
 });
 
 export async function PATCH(
@@ -14,19 +15,19 @@ export async function PATCH(
   try {
     const user = await getCurrentUser();
 
-    if (!user || user.role !== 'ADMIN') {
+    if (!user?.role || user.role !== 'ADMIN') {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
     const json = await request.json();
     const body = updateSchema.parse(json);
 
-    const promise = await prisma.promise.update({
+    const promise = await db.promise.update({
       where: {
         id: params.promiseId,
       },
       data: {
-        status: body.status,
+        status: body.status as Status,
       },
     });
 
@@ -36,6 +37,7 @@ export async function PATCH(
       return new NextResponse(JSON.stringify(error.issues), { status: 422 });
     }
 
+    console.error('Error updating promise:', error);
     return new NextResponse('Internal Error', { status: 500 });
   }
 }
@@ -45,21 +47,27 @@ export async function GET(
   { params }: { params: { promiseId: string } }
 ) {
   try {
-    const promise = await prisma.promise.findUnique({
+    const promise = await db.promise.findUnique({
       where: {
-        id: params.promiseId,
+        id: params.promiseId
       },
       include: {
-        user: true,
-      },
+        user: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
+      }
     });
 
     if (!promise) {
-      return new NextResponse('Not Found', { status: 404 });
+      return new NextResponse('Promise not found', { status: 404 });
     }
 
     return NextResponse.json(promise);
   } catch (error) {
+    console.error('Error fetching promise:', error);
     return new NextResponse('Internal Error', { status: 500 });
   }
 }
