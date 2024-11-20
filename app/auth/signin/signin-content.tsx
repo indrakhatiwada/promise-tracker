@@ -10,7 +10,14 @@ export default function SignInContent() {
   const callbackUrl = searchParams.get('callbackUrl') || '/';
 
   const handleSignIn = async () => {
-    await signIn('google', { callbackUrl });
+    try {
+      await signIn('google', { 
+        callbackUrl,
+        redirect: true,
+      });
+    } catch (error) {
+      console.error('Sign in error:', error);
+    }
   };
 
   return (
@@ -29,11 +36,27 @@ export default function SignInContent() {
           <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">
             {error === 'AccessDenied' 
               ? 'You do not have permission to access this resource.'
+              : error === 'OAuthSignin' 
+              ? 'Error starting the sign-in process. Please try again.'
+              : error === 'OAuthCallback'
+              ? 'Error completing the sign-in process. Please try again.'
+              : error === 'OAuthCreateAccount'
+              ? 'Could not create user account. Please try again.'
+              : error === 'EmailCreateAccount'
+              ? 'Could not create user account. Please try again.'
+              : error === 'Callback'
+              ? 'Error during authentication callback. Please try again.'
+              : error === 'OAuthAccountNotLinked'
+              ? 'Email is already linked to another account.'
               : 'An error occurred while signing in. Please try again.'}
           </div>
         )}
 
-        <Button onClick={handleSignIn} className="w-full">
+        <Button 
+          onClick={handleSignIn} 
+          className="w-full"
+          variant="default"
+        >
           Sign in with Google
         </Button>
       </div>

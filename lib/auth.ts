@@ -22,9 +22,22 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          prompt: "select_account",
+          access_type: "offline",
+          response_type: "code"
+        }
+      }
     }),
   ],
   callbacks: {
+    async signIn({ account, profile }) {
+      if (account?.provider === "google") {
+        return !!(profile?.email);
+      }
+      return true;
+    },
     async session({ token, session }) {
       if (token && session.user) {
         session.user.id = token.id as string;
@@ -68,6 +81,7 @@ export const authOptions: NextAuthOptions = {
       };
     },
   },
+  debug: process.env.NODE_ENV === 'development',
 };
 
 export async function getCurrentUser() {
