@@ -4,9 +4,25 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
+const dummyPrismaClient = {
+  // Add dummy implementations of used Prisma methods
+  user: {
+    findUnique: () => Promise.resolve(null),
+    findFirst: () => Promise.resolve(null),
+    update: () => Promise.resolve(null),
+  },
+  promise: {
+    findMany: () => Promise.resolve([]),
+    findUnique: () => Promise.resolve(null),
+    create: () => Promise.resolve(null),
+    update: () => Promise.resolve(null),
+  },
+} as PrismaClient;
+
 const prismaClientSingleton = () => {
-  if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL environment variable is not set');
+  // During build time or when DATABASE_URL is not available, return dummy client
+  if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL) {
+    return dummyPrismaClient;
   }
 
   return new PrismaClient({

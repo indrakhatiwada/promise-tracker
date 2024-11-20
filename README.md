@@ -97,6 +97,7 @@ A web application for tracking and moderating political promises using Next.js, 
 3. Connect your GitHub repository
 4. Configure the following environment variables in Vercel:
    ```
+   # Required for build and runtime
    DATABASE_URL=your-supabase-connection-pooler-url
    DIRECT_URL=your-supabase-direct-connection-url
    NEXTAUTH_SECRET=your-nextauth-secret
@@ -104,18 +105,17 @@ A web application for tracking and moderating political promises using Next.js, 
    GOOGLE_CLIENT_ID=your-google-client-id
    GOOGLE_CLIENT_SECRET=your-google-client-secret
    ```
-5. Deploy!
+5. In your Vercel project settings:
+   - Set the Build Command to: `npm run build`
+   - Set the Install Command to: `npm install`
+   - Set the Output Directory to: `.next`
+6. Deploy!
 
-Note: Make sure to update your Google OAuth credentials to include your production domain's callback URL:
-`https://your-production-domain.com/api/auth/callback/google`
-
-### Database Connection
-
-The application uses two database URLs:
+Note: The application uses two database URLs:
 - `DATABASE_URL`: Connection pooler URL (used in production)
 - `DIRECT_URL`: Direct connection URL (used in development)
 
-This setup ensures optimal performance in both environments while preventing connection pool exhaustion.
+Make sure both URLs are properly set in your environment variables.
 
 ## Database Schema
 
