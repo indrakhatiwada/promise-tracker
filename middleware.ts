@@ -4,14 +4,21 @@ import { NextResponse } from 'next/server';
 export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token;
-    console.log('Middleware - Token:', token);
-    console.log('Middleware - Role:', token?.role);
 
     // Check for admin routes
     if (req.nextUrl.pathname.startsWith('/admin')) {
       if (token?.role !== 'ADMIN') {
-        console.log('Middleware - Admin Access Denied:', token);
         return NextResponse.redirect(new URL('/', req.url));
+      }
+    }
+
+    // Check for authenticated routes
+    if (
+      req.nextUrl.pathname.startsWith('/promises/new') ||
+      req.nextUrl.pathname.startsWith('/submit')
+    ) {
+      if (!token) {
+        return NextResponse.redirect(new URL('/auth/signin', req.url));
       }
     }
 
@@ -19,8 +26,17 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized: ({ token }) => {
-        console.log('Middleware Authorized Check - Token:', token);
+      authorized: ({ token, req }) => {
+        // Public routes
+        if (
+          req.nextUrl.pathname.startsWith('/auth/') ||
+          req.nextUrl.pathname === '/' ||
+          req.nextUrl.pathname.startsWith('/promises') && !req.nextUrl.pathname.startsWith('/promises/new')
+        ) {
+          return true;
+        }
+
+        // Protected routes require authentication
         return !!token;
       },
     },
@@ -28,5 +44,12 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: [
+    '/admin/:path*',
+    '/promises/new',
+    '/submit',
+    '/auth/:path*',
+    '/promises/:path*',
+    '/'
+  ],
 };

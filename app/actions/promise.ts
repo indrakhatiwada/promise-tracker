@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma-client";
 import { promiseFormSchema } from "@/lib/validations/promise";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth-config";
+import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { ZodError } from "zod";
 
