@@ -88,6 +88,35 @@ A web application for tracking and moderating political promises using Next.js, 
 8. **Access the Application**
    Open [http://localhost:3000](http://localhost:3000) in your browser
 
+## Deployment
+
+### Deploying to Vercel
+
+1. Push your code to GitHub
+2. Create a new project on Vercel
+3. Connect your GitHub repository
+4. Configure the following environment variables in Vercel:
+   ```
+   DATABASE_URL=your-supabase-connection-pooler-url
+   DIRECT_URL=your-supabase-direct-connection-url
+   NEXTAUTH_SECRET=your-nextauth-secret
+   NEXTAUTH_URL=https://your-production-domain.com
+   GOOGLE_CLIENT_ID=your-google-client-id
+   GOOGLE_CLIENT_SECRET=your-google-client-secret
+   ```
+5. Deploy!
+
+Note: Make sure to update your Google OAuth credentials to include your production domain's callback URL:
+`https://your-production-domain.com/api/auth/callback/google`
+
+### Database Connection
+
+The application uses two database URLs:
+- `DATABASE_URL`: Connection pooler URL (used in production)
+- `DIRECT_URL`: Direct connection URL (used in development)
+
+This setup ensures optimal performance in both environments while preventing connection pool exhaustion.
+
 ## Database Schema
 
 The application uses the following main models:
@@ -99,12 +128,17 @@ The application uses the following main models:
 ## Admin Access
 
 To grant admin access to a user:
-1. Sign in with Google
-2. Access your Supabase database
-3. Update the user's role in the `User` table:
-   ```sql
-   UPDATE "User" SET role = 'ADMIN' WHERE email = 'your-email@example.com';
+
+1. First, ensure the user has signed in at least once using Google OAuth
+2. Run the admin script with their email:
+   ```bash
+   npx ts-node scripts/set-admin.ts user@example.com
    ```
+
+Alternatively, you can update the role directly in the Supabase database:
+```sql
+UPDATE "User" SET role = 'ADMIN' WHERE email = 'user@example.com';
+```
 
 ## Promise Statuses
 

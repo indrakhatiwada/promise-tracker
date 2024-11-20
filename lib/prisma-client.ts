@@ -5,10 +5,16 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 const prismaClientSingleton = () => {
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL environment variable is not set');
+  }
+
   return new PrismaClient({
     datasources: {
       db: {
-        url: process.env.DIRECT_URL,
+        url: process.env.NODE_ENV === 'production' 
+          ? process.env.DATABASE_URL 
+          : process.env.DIRECT_URL || process.env.DATABASE_URL,
       },
     },
   });
