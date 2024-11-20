@@ -27,9 +27,14 @@ export default withAuth(
   {
     callbacks: {
       authorized: ({ token, req }) => {
+        // Always allow auth-related routes
+        if (req.nextUrl.pathname.startsWith('/auth') ||
+            req.nextUrl.pathname.startsWith('/api/auth')) {
+          return true;
+        }
+
         // Public routes
         if (
-          req.nextUrl.pathname.startsWith('/auth/') ||
           req.nextUrl.pathname === '/' ||
           req.nextUrl.pathname.startsWith('/promises') && !req.nextUrl.pathname.startsWith('/promises/new')
         ) {
@@ -49,7 +54,6 @@ export const config = {
     '/promises/new',
     '/submit',
     '/auth/:path*',
-    '/promises/:path*',
-    '/'
-  ],
+    '/api/auth/:path*',
+  ]
 };
