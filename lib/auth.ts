@@ -45,12 +45,21 @@ export const authOptions: NextAuthOptions = {
           prompt: "consent",
         }
       },
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+          role: 'USER'
+        }
+      },
       allowDangerousEmailAccountLinking: true
     }),
   ],
   cookies: {
     sessionToken: {
-      name: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
+      name: 'next-auth.session-token',
       options: {
         httpOnly: true,
         sameSite: 'lax',
@@ -59,7 +68,7 @@ export const authOptions: NextAuthOptions = {
       }
     },
     callbackUrl: {
-      name: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.callback-url' : 'next-auth.callback-url',
+      name: 'next-auth.callback-url',
       options: {
         httpOnly: true,
         sameSite: 'lax',
@@ -78,6 +87,20 @@ export const authOptions: NextAuthOptions = {
 
       if (account?.provider === "google") {
         const hasEmail = !!(profile?.email);
+        if (hasEmail) {
+          // Ensure user exists in database
+          const dbUser = await prisma.user.upsert({
+            where: { email: profile.email },
+            update: {},
+            create: {
+              email: profile.email,
+              name: profile.name,
+              image: profile.picture,
+              role: 'USER'
+            }
+          });
+          authLogger('✅ User upserted', { userId: dbUser.id });
+        }
         authLogger(hasEmail ? '✅ Valid Google sign in' : '❌ Invalid Google sign in - no email', { profile });
         return hasEmail;
       }
